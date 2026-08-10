@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pós Sorting · Kuehne+Nagel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --kn-navy: #0B1F3A;
+    --kn-navy-2: #132A4D;
+    --kn-navy-3: #081527;
+    --kn-orange: #FF6A13;
+    --kn-orange-dark: #E4560A;
+    --kn-gray: #7C8CA6;
+    --kn-bg: #EEF1F6;
+    --kn-line: #E1E6EE;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--kn-bg);
+    font-family:'Poppins',Arial,sans-serif;
+    font-size:15px;
+    color:var(--kn-navy);
+    padding:24px 16px 60px;
+  }
+  .app{max-width:1000px;margin:0 auto;}
+  .brand-wrap{
+    background:var(--kn-navy);border-radius:16px 16px 0 0;padding-bottom:14px;text-align:center;
+  }
+  .brand{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:22px 20px 18px;
+  }
+  .brand .logo{font-weight:800;font-size:26px;letter-spacing:1px;color:#fff;}
+  .brand .logo span{color:var(--kn-orange);}
+  .brand .anchor{color:#5BC8E8;font-size:20px;margin-left:6px;}
+  .brand .tag{color:#9FB0C9;font-size:13px;font-weight:500;margin-top:2px;}
+  .card{
+    background:#fff;border-radius:0 0 16px 16px;padding:26px 26px 30px;
+    box-shadow:0 10px 30px rgba(11,31,58,0.08);
+    margin-bottom:24px;
+  }
+  h2{font-size:18px;margin:0 0 14px;color:var(--kn-navy);}
+  .controls-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+  .controls-row label{font-size:13px;color:var(--kn-gray);font-weight:600;display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px;}
+  input[type=text], input[type=number], select{
+    font-family:'Poppins',Arial,sans-serif;
+    padding:10px 12px;border:1.5px solid var(--kn-line);border-radius:8px;font-size:15px;color:var(--kn-navy);background:#fff;width:100%;
+  }
+  input[type=text]:focus, input[type=number]:focus, select:focus{outline:none;border-color:var(--kn-orange);}
+  textarea{
+    width:100%;min-height:200px;padding:14px;border:1.5px solid var(--kn-line);border-radius:10px;
+    font-family:'Roboto Mono',monospace;font-size:14px;line-height:1.6;color:var(--kn-navy);resize:vertical;
+  }
+  textarea:focus{outline:none;border-color:var(--kn-orange);}
+  .hint{font-size:12.5px;color:var(--kn-gray);margin-top:8px;line-height:1.5;}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;}
+  button{
+    font-family:'Poppins',Arial,sans-serif;font-weight:600;font-size:14.5px;
+    padding:11px 20px;border-radius:8px;border:none;cursor:pointer;transition:transform .08s ease, opacity .15s ease;
+  }
+  button:active{transform:scale(0.97);}
+  .primary{background:var(--kn-orange);color:#fff;}
+  .primary:hover{background:var(--kn-orange-dark);}
+  .secondary{background:#fff;color:var(--kn-navy);border:1.5px solid var(--kn-line);}
+  .secondary:hover{border-color:var(--kn-navy);}
+  .ghost{background:var(--kn-navy-2);color:#fff;}
+  .hidden{display:none;}
+
+  .summary-strip{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px;}
+  .pill{
+    background:var(--kn-navy);color:#fff;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:20px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .pill .swatch{width:18px;height:18px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+
+  .table-scroll{overflow-x:auto;}
+  table.status-table{width:100%;border-collapse:collapse;min-width:640px;}
+  .status-table th{
+    text-align:left;font-size:11px;letter-spacing:.05em;color:var(--kn-gray);text-transform:uppercase;
+    padding:8px 8px;border-bottom:2px solid var(--kn-line);white-space:nowrap;
+  }
+  .status-table td{padding:8px;border-bottom:1px solid var(--kn-line);vertical-align:middle;}
+  .swatch-picker{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    position:relative;cursor:pointer;box-shadow:0 3px 10px rgba(11,31,58,0.22);
+  }
+  .swatch-picker .swatch-icon{font-size:19px;line-height:1;pointer-events:none;}
+  .swatch-picker input[type=color]{
+    position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0;
+  }
+  .status-table input[type=text]{min-width:120px;}
+  .status-table input[type=number]{width:80px;}
+  .status-table .desc-input{min-width:220px;}
+  .status-table .pct-cell{font-weight:700;color:var(--kn-orange);white-space:nowrap;}
+  .status-table .remove-btn{background:#fff;color:#C0392B;border:1.5px solid #F1C9C4;padding:8px 10px;border-radius:8px;font-size:13px;}
+  .status-table .remove-btn:hover{background:#FDECEC;}
+  .total-line{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:2px solid var(--kn-navy);font-weight:800;font-size:16px;}
+  .total-line span.tot-value{color:var(--kn-orange);}
+
+  .canvas-block{margin-top:0;flex:1;min-width:280px;}
+  .canvas-block h3{font-size:14px;color:var(--kn-navy);margin:0 0 10px;}
+  .canvas-wrap{background:#F5F7FA;border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+  canvas{width:100%;max-width:380px;border-radius:10px;box-shadow:0 6px 20px rgba(11,31,58,0.15);}
+  .canvas-row{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;}
+  .copytext{
+    width:100%;min-height:110px;font-family:'Roboto Mono',monospace;font-size:12.5px;padding:12px;
+    border-radius:10px;border:1.5px solid var(--kn-line);margin-top:10px;color:var(--kn-navy);
+  }
+  footer{text-align:center;color:var(--kn-gray);font-size:12px;margin-top:10px;}
+
+  @media (max-width:640px){
+    body{padding:16px 10px 40px;font-size:14px;}
+    .card{padding:18px 16px 22px;}
+    .controls-row{flex-direction:column;}
+    .btn-row{flex-direction:column;}
+    .btn-row button{width:100%;}
+    .brand .logo{font-size:21px;}
+    h2{font-size:16px;}
+    .status-table td, .status-table th{font-size:12.5px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="brand-wrap">
+    <div class="brand">
+      <div>
+        <div class="logo">KUEHNE<span>+</span>NAGEL<span class="anchor">⚓</span></div>
+        <div class="tag">Operação Meli · Pós Sorting</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-radius:0;margin-top:-24px;padding-top:20px;">
+    <h2>1. Dados</h2>
+    <div class="controls-row">
+      <label>Ciclo / Título
+        <select id="cicloInput">
+          <option value="SD">SD</option>
+          <option value="CHP">CHP</option>
+        </select>
+      </label>
+      <label>Data
+        <input type="text" id="dataInput" value="">
+      </label>
+    </div>
+    <textarea id="dataArea" spellcheck="false"></textarea>
+    <div class="hint">
+      Cole no formato <b>ID [TAB] Rota [TAB] Causa</b> (copiado direto do Excel), um por linha.
+      Também aceita <b>ID [TAB] Rota_Causa</b> juntos (a rota é reconhecida pelo "_"), ou apenas <b>ID [TAB] Causa</b> sem rota.
+    </div>
+    <div class="btn-row">
+      <button class="primary" id="processBtn">Processar dados</button>
+      <button class="secondary" id="clearBtn">Limpar</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="resultsSection">
+    <h2>2. Status (edite, adicione ou remova)</h2>
+    <div class="summary-strip" id="summaryStrip"></div>
+
+    <div class="table-scroll">
+      <table class="status-table">
+        <thead>
+          <tr><th></th><th>Status</th><th>Pacotes</th><th>%</th><th>Justificativa / descrição</th><th></th></tr>
+        </thead>
+        <tbody id="statusBody"></tbody>
+      </table>
+    </div>
+
+    <div class="total-line">
+      <span>Total geral</span>
+      <span class="tot-value" id="totalDisplay">0</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="secondary" id="addStatusBtn">+ Adicionar status</button>
+    </div>
+
+    <h2 style="margin-top:26px;">3. Gerar imagens de status</h2>
+    <div class="btn-row">
+      <button class="ghost" id="genSummaryImg">Gerar imagem — Resumo</button>
+      <button class="ghost" id="genListImg">Gerar imagem — IDs e Rotas</button>
+      <button class="secondary" id="copyTextBtn">Copiar texto-resumo (WhatsApp)</button>
+    </div>
+    <textarea class="copytext hidden" id="copyTextArea" readonly></textarea>
+
+    <div class="canvas-row" style="margin-top:18px;">
+      <div class="canvas-block hidden" id="summaryBlock">
+        <h3>Imagem 1 — Resumo (formato status)</h3>
+        <div class="canvas-wrap">
+          <canvas id="summaryCanvas" width="1080" height="1920"></canvas>
+          <button class="primary" id="copySummaryBtn">Copiar imagem (colar no WhatsApp)</button>
+        </div>
+      </div>
+
+      <div class="canvas-block hidden" id="listBlock">
+        <h3>Imagem 2 — IDs e Rotas (formato status)</h3>
+        <div class="canvas-wrap">
+          <canvas id="listCanvas" width="1080" height="1920"></canvas>
+          <button class="primary" id="copyListBtn">Copiar imagem (colar no WhatsApp)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Kuehne+Nagel · Operação Meli — ferramenta local, nada é enviado a servidores.</footer>
+</div>
+
+<script>
+const PALETTE = ['#FF6A13','#2FB6A6','#E4B93E','#5B8DEF','#E1523D','#8E6FE0','#3EC48A','#D4547F'];
+
+const GENERIC_DESC = {
+  'correto': 'Pacote com rota e status corretos, sem pendência de ação.',
+  'a mais': 'Pacote localizado a mais na rota, fora da expectativa inicial.',
+  'recebidos': 'Pacote recebido no ciclo, ainda não vinculado.',
+  'recebido': 'Pacote recebido no ciclo, ainda não vinculado.',
+  'avaria': 'Pacote avariado.',
+  'avarias': 'Pacotes avariados.',
+  'buffer': 'Pacote pendente no buffer, aguardando processamento.',
+  'buffered': 'Pacote pendente no buffer, aguardando processamento.',
+  'insucesso': 'Pacote com tentativa de entrega sem sucesso.',
+  'devolucao': 'Pacote encaminhado para devolução.',
+  'inventariado': 'Pacote inventariado, aguardando próxima etapa.',
+  'cancelado': 'Pacote com movimentação cancelada.',
+  'pendente de inventario': 'Pacote pendente de ser inventariado.',
+  'atrelados': 'Pacote conteinerizado no carrinho.',
+  'chp': 'Última movimentação sistêmica pelo ciclo CHP.'
+};
+
+// keyword -> {icon, color} used to auto-pick a meaningful icon per status
+const ICON_RULES = [
+  {test:k=>k.includes('correto'), icon:'✅', color:'#3EC48A'},
+  {test:k=>k.includes('faltante')||k.includes('falta'), icon:'⚠️', color:'#E1523D'},
+  {test:k=>k.includes('amais')||k.includes('a mais'), icon:'➕', color:'#5B8DEF'},
+  {test:k=>k.includes('avaria'), icon:'!', color:'#E1523D'},
+  {test:k=>k.includes('recebido'), icon:'↓', color:'#FF6A13'},
+  {test:k=>k.includes('buffer'), icon:'⏳', color:'#2FB6A6'},
+  {test:k=>k.includes('insucesso'), icon:'❌', color:'#E1523D'},
+  {test:k=>k.includes('devolu'), icon:'↩', color:'#8E6FE0'},
+  {test:k=>k.includes('invent'), icon:'📦', color:'#E4B93E'},
+  {test:k=>k.includes('cancel'), icon:'❌', color:'#7C8CA6'},
+  {test:k=>k.includes('chp'), icon:'📍', color:'#D4547F'},
+  {test:k=>k.includes('atrelad'), icon:'🔗', color:'#3EC48A'},
+  {test:k=>k.includes('pendente'), icon:'⏳', color:'#E4B93E'}
+];
+
+function normalizeKey(s){
+  return (s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function hashIndex(str, mod){
+  let h = 0;
+  for(let i=0;i<str.length;i++) h = (h*31 + str.charCodeAt(i)) >>> 0;
+  return h % mod;
+}
+
+function getIconForKey(key){
+  for(const rule of ICON_RULES){ if(rule.test(key)) return {icon:rule.icon, color:rule.color}; }
+  return {icon:'●', color: PALETTE[hashIndex(key, PALETTE.length)]};
+}
+
+function todayStr(){
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = d.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
+
+// --- sample data transcribed from the uploaded image ---
+const sampleRows = [
+  ["47609427948","VC2_SD","Correto"],
+  ["47610530977","B2_SD","Correto"],
+  ["47617557914","VC9_SD","Correto"],
+  ["47659250716","VC7_SD","Correto"],
+  ["47660923459","VC8_SD","Correto"],
+  ["47671232844","VC1_SD","Correto"],
+  ["47671929470","B1_SD","Correto"],
+  ["47675635906","VC3_SD","Correto"],
+  ["47700828732","A8_SD","Correto"],
+  ["47701851295","B8_SD","Correto"],
+  ["47704557067","B3_SD","Correto"],
+  ["47705334179","A3_SD","Correto"],
+  ["47708115525","B4_SD","Correto"],
+  ["47708295920","B10_SD","Correto"],
+  ["47708587883","VC5_SD","Correto"],
+  ["47708596925","A12_SD","Correto"],
+  ["47708607563","A10_SD","Correto"],
+  ["47711312178","VC4_SD","Correto"],
+  ["47714841989","A11_SD","Correto"],
+  ["47715147745","VC6_SD","Correto"]
+];
+
+document.getElementById('dataArea').value = sampleRows.map(r=>r.join('\t')).join('\n');
+document.getElementById('dataInput').value = todayStr();
+
+let currentGroups = [];   // [{key,label,count,color,icon,desc,manual}]
+let currentItems = [];    // [{id,rota,causaKey,causaRaw}]
+let currentTotal = 0;
+
+function parseLine(line){
+  const cols = line.split('\t').map(c=>c.trim()).filter(c=>c!=='');
+  if(cols.length===0) return null;
+  if(/^total\b/i.test(cols[0])) return null;
+
+  let id, rota=null, causa;
+  if(cols.length>=3){
+    id = cols[0]; rota = cols[1]; causa = cols.slice(2).join(' ');
+  } else if(cols.length===2){
+    id = cols[0];
+    const parts = cols[1].split(/\s+/);
+    const idx = parts.findIndex(p=>p.includes('_'));
+    if(idx>=0){
+      rota = parts[idx];
+      causa = parts.filter((_,i)=>i!==idx).join(' ') || 'Sem causa';
+    } else {
+      causa = cols[1];
+    }
+  } else {
+    const parts = cols[0].split(/\s+/);
+    id = parts[0];
+    const idx = parts.slice(1).findIndex(p=>p.includes('_'));
+    if(idx>=0){
+      rota = parts[1+idx];
+      causa = parts.slice(1).filter((_,i)=>i!==idx).join(' ') || 'Sem causa';
+    } else {
+      causa = parts.slice(1).join(' ') || 'Sem causa';
+    }
+  }
+  if(!id) return null;
+  return {id, rota, causa: causa.trim()};
+}
+
+function processData(){
+  const text = document.getElementById('dataArea').value;
+  const lines = text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  const parsed = [];
+  for(const line of lines){
+    const p = parseLine(line);
+    if(p) parsed.push(p);
+  }
+  currentItems = parsed.map(it=>({id:it.id, rota:it.rota, causaKey:normalizeKey(it.causa), causaRaw:it.causa}));
+
+  const counts = {};
+  const firstLabel = {};
+  parsed.forEach(it=>{
+    const k = normalizeKey(it.causa);
+    counts[k] = (counts[k]||0)+1;
+    if(!(k in firstLabel)) firstLabel[k] = it.causa;
+  });
+
+  const newGroups = [];
+  // keep manual (user-added) statuses across reprocessing
+  currentGroups.filter(g=>g.manual).forEach(g=>newGroups.push(g));
+  Object.keys(counts).forEach(k=>{
+    const existing = currentGroups.find(g=>g.key===k && !g.manual);
+    if(existing){
+      existing.count = counts[k];
+      newGroups.push(existing);
+    } else {
+      const info = getIconForKey(k);
+      newGroups.push({
+        key:k,
+        label:firstLabel[k],
+        count:counts[k],
+        color:info.color,
+        icon:info.icon,
+        desc: GENERIC_DESC[k] || `Pacotes classificados como "${firstLabel[k]}".`,
+        manual:false
+      });
+    }
+  });
+  currentGroups = newGroups;
+  currentGroups.sort((a,b)=>b.count-a.count);
+  recomputeTotal();
+  renderResults();
+
+  document.getElementById('resultsSection').classList.remove('hidden');
+  document.getElementById('summaryBlock').classList.add('hidden');
+  document.getElementById('listBlock').classList.add('hidden');
+  document.getElementById('copyTextArea').classList.add('hidden');
+}
+
+function recomputeTotal(){
+  currentTotal = currentGroups.reduce((s,g)=> s + (Number(g.count)||0), 0);
+}
+
+function renderResults(){
+  recomputeTotal();
+
+  const strip = document.getElementById('summaryStrip');
+  strip.innerHTML = '';
+  currentGroups.forEach(g=>{
+    const pct = currentTotal? (g.count/currentTotal*100).toFixed(1) : '0.0';
+    const pill = document.createElement('div');
+    pill.className='pill';
+    pill.innerHTML = `<span class="swatch" style="background:${g.color}">${g.icon}</span>${g.label}: ${g.count} (${pct}%)`;
+    strip.appendChild(pill);
+  });
+
+  const body = document.getElementById('statusBody');
+  body.innerHTML = '';
+  currentGroups.forEach(g=>{
+    const pct = currentTotal? (g.count/currentTotal*100).toFixed(1) : '0.0';
+    const tr = document.createElement('tr');
+    tr.dataset.key = g.key;
+    tr.innerHTML = `
+      <td>
+        <label class="swatch-picker" style="background:${g.color}">
+          <span class="swatch-icon">${g.icon}</span>
+          <input type="color" value="${g.color}" data-field="color">
+        </label>
+      </td>
+      <td><input type="text" value="${g.label}" data-field="label"></td>
+      <td><input type="number" min="0" value="${g.count}" data-field="count"></td>
+      <td class="pct-cell">${pct}%</td>
+      <td><input type="text" class="desc-input" value="${g.desc}" data-field="desc"></td>
+      <td><button class="remove-btn" data-action="remove">Remover</button></td>
+    `;
+    body.appendChild(tr);
+  });
+
+  body.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const tr = e.target.closest('tr');
+      const key = tr.dataset.key;
+      const g = currentGroups.find(gr=>gr.key===key);
+      if(!g) return;
+      const field = e.target.dataset.field;
+      if(field==='count') g.count = Number(e.target.value)||0;
+      else g[field] = e.target.value;
+      renderResults();
+    });
+  });
+  body.querySelectorAll('[data-action="remove"]').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const tr = e.target.closest('tr');
+      const key = tr.dataset.key;
+      currentGroups = currentGroups.filter(g=>g.key!==key);
+      renderResults();
+    });
+  });
+
+  document.getElementById('totalDisplay').textContent = currentTotal;
+}
+
+document.getElementById('addStatusBtn').addEventListener('click', ()=>{
+  const key = `manual-${Date.now()}`;
+  currentGroups.push({
+    key, label:'Novo status', count:0,
+    color: PALETTE[currentGroups.length % PALETTE.length],
+    icon:'●', desc:'', manual:true
+  });
+  renderResults();
+});
+
+// ---------- font loading (avoids "shaky" fallback-font text on canvas) ----------
+async function ensureFontsLoaded(){
+  const weightsPoppins = [400,500,600,700,800];
+  const weightsMono = [400,500,600,700];
+  const jobs = [];
+  weightsPoppins.forEach(w=>jobs.push(document.fonts.load(`${w} 40px Poppins`)));
+  weightsMono.forEach(w=>jobs.push(document.fonts.load(`${w} 24px "Roboto Mono"`)));
+  try{ await Promise.all(jobs); }catch(e){}
+  try{ await document.fonts.ready; }catch(e){}
+}
+
+// ---------- canvas helpers ----------
+function drawHexagon(ctx, cx, cy, r, color){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){
+    const angle = Math.PI/180*(60*i-30);
+    const x = cx + r*Math.cos(angle);
+    const y = cy + r*Math.sin(angle);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+function drawStatusIcon(ctx, cx, cy, r, color, icon){
+  ctx.save();
+  drawHexagon(ctx, cx, cy, r, color);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `700 ${Math.round(r*1.15)}px Poppins, Arial, sans-serif`;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(icon, cx, cy+1);
+  ctx.restore();
+}
+
+function wrapText(ctx, text, maxWidth){
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  for(const w of words){
+    const test = current ? current+' '+w : w;
+    if(ctx.measureText(test).width > maxWidth && current){
+      lines.push(current);
+      current = w;
+    } else {
+      current = test;
+    }
+  }
+  if(current) lines.push(current);
+  return lines;
+}
+
+function drawLogo(ctx, cx, cy, scale){
+  ctx.textAlign = 'left';
+  const logoFont = `800 ${44*scale}px Poppins, Arial, sans-serif`;
+  const anchorFont = `700 ${32*scale}px Poppins, Arial, sans-serif`;
+  ctx.font = logoFont;
+  const partA='KUEHNE', partB='+', partC='NAGEL';
+  const wA=ctx.measureText(partA).width;
+  const wB=ctx.measureText(partB).width;
+  const wC=ctx.measureText(partC).width;
+  ctx.font = anchorFont;
+  const anchorW = ctx.measureText('⚓').width;
+  const gap = 6*scale;
+  const anchorGap = 14*scale;
+  const totalW = wA+wB+wC+gap*2+anchorGap+anchorW;
+  let x = cx - totalW/2;
+  ctx.font = logoFont;
+  ctx.fillStyle='#FFFFFF'; ctx.fillText(partA, x, cy); x+=wA+gap;
+  ctx.fillStyle='#FF6A13'; ctx.fillText(partB, x, cy); x+=wB+gap;
+  ctx.fillStyle='#FFFFFF'; ctx.fillText(partC, x, cy); x+=wC+anchorGap;
+  ctx.font = anchorFont;
+  ctx.fillStyle='#5BC8E8';
+  ctx.fillText('⚓', x, cy-2*scale);
+}
+
+function drawSummaryImage(){
+  const canvas = document.getElementById('summaryCanvas');
+  const W = 1080, H = 1920, SCALE = 2;
+  canvas.width = W*SCALE;
+  canvas.height = H*SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+  ctx.clearRect(0,0,W,H);
+
+  const bg = ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0E2444'); bg.addColorStop(1,'#081527');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  drawLogo(ctx, W/2, 130, 1);
+  ctx.fillStyle = '#FF6A13';
+  ctx.fillRect(W/2-110, 165, 220, 4);
+
+  ctx.textAlign='center';
+  ctx.fillStyle='#FFFFFF';
+  ctx.font='700 56px Poppins, Arial, sans-serif';
+  const summaryTitle = 'Análise de Faltantes';
+  ctx.fillText(summaryTitle, W/2, 260);
+
+  const ciclo = document.getElementById('cicloInput').value || 'SD';
+  const data = document.getElementById('dataInput').value || todayStr();
+  ctx.font='500 36px Poppins, Arial, sans-serif';
+  ctx.fillStyle='#9FB0C9';
+  ctx.fillText(`${ciclo} · ${data}`, W/2, 306);
+
+  // table header
+  let y = 405;
+  ctx.textAlign='left';
+  ctx.font='600 26px Poppins, Arial, sans-serif';
+  ctx.fillStyle='#7C8CA6';
+  ctx.fillText('CAUSA', 100, y);
+  ctx.textAlign='right';
+  ctx.fillText('PACOTES', 800, y);
+  ctx.fillText('%', 960, y);
+  ctx.strokeStyle='rgba(255,255,255,0.12)';
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(100,y+18); ctx.lineTo(960,y+18); ctx.stroke();
+
+  y += 58;
+  const rowH = 96;
+  currentGroups.forEach(g=>{
+    const pct = currentTotal? (g.count/currentTotal*100).toFixed(1) : '0.0';
+    drawStatusIcon(ctx, 122, y-10, 29, g.color, g.icon);
+    ctx.textAlign='left';
+    ctx.font='600 38px Poppins, Arial, sans-serif';
+    ctx.fillStyle='#FFFFFF';
+    ctx.fillText(g.label, 172, y);
+    ctx.textAlign='right';
+    ctx.font='700 38px Poppins, Arial, sans-serif';
+    ctx.fillText(String(g.count), 800, y);
+    ctx.fillStyle='#FF9E5C';
+    ctx.fillText(pct+'%', 960, y);
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.beginPath(); ctx.moveTo(100,y+30); ctx.lineTo(960,y+30); ctx.stroke();
+    y += rowH;
+  });
+
+  y += 10;
+  ctx.fillStyle='#FF6A13';
+  ctx.fillRect(100, y-30, 860, 3);
+  y += 46;
+  ctx.textAlign='left';
+  ctx.font='800 42px Poppins, Arial, sans-serif';
+  ctx.fillStyle='#FFFFFF';
+  ctx.fillText('TOTAL GERAL', 100, y);
+  ctx.textAlign='right';
+  ctx.fillText(String(currentTotal), 800, y);
+  ctx.fillStyle='#FF6A13';
+  ctx.fillText('100%', 960, y);
+
+  // legend
+  y += 90;
+  ctx.textAlign='left';
+  ctx.font='700 27px Poppins, Arial, sans-serif';
+  ctx.fillStyle='#7C8CA6';
+  ctx.fillText('LEGENDA', 100, y);
+  y += 44;
+
+  currentGroups.forEach(g=>{
+    drawStatusIcon(ctx, 122, y+2, 21, g.color, g.icon);
+    ctx.font='700 30px Poppins, Arial, sans-serif';
+    ctx.fillStyle='#FFFFFF';
+    ctx.fillText(g.label, 160, y+10);
+
+    ctx.font='400 27px Poppins, Arial, sans-serif';
+    ctx.fillStyle='#B9C2D0';
+    const lines = wrapText(ctx, g.desc||'', 780);
+    let lineY = y + 46;
+    lines.forEach(line=>{
+      ctx.fillText(line, 160, lineY);
+      lineY += 34;
+    });
+    y = lineY + 18;
+  });
+
+  ctx.textAlign='center';
+  ctx.font='400 22px Poppins, Arial, sans-serif';
+  ctx.fillStyle='#5C6C86';
+  ctx.fillText('Kuehne+Nagel · Operação Meli', W/2, H-60);
+
+  document.getElementById('summaryBlock').classList.remove('hidden');
+}
+
+function drawListImage(){
+  const canvas = document.getElementById('listCanvas');
+  const W = 1080, H = 1920, SCALE = 2;
+  canvas.width = W*SCALE;
+  canvas.height = H*SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+  ctx.clearRect(0,0,W,H);
+
+  const bg = ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0E2444'); bg.addColorStop(1,'#081527');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  const causaColor = {};
+  currentGroups.forEach(g=>{ causaColor[g.key] = g.color; });
+  const causaLabelByKey = {};
+  currentGroups.forEach(g=>{ causaLabelByKey[g.key] = g.label; });
+
+  drawLogo(ctx, W/2, 110, 0.85);
+  ctx.fillStyle = '#FF6A13';
+  ctx.fillRect(W/2-100, 140, 200, 4);
+
+  ctx.textAlign='center';
+  ctx.fillStyle='#FFFFFF';
+  ctx.font='700 46px Poppins, Arial, sans-serif';
+  const listTitle = 'Pós Sorting';
+  ctx.fillText(listTitle, W/2, 210);
+
+  const ciclo = document.getElementById('cicloInput').value || 'SD';
+  const data = document.getElementById('dataInput').value || todayStr();
+  ctx.font='500 32px Poppins, Arial, sans-serif';
+  ctx.fillStyle='#9FB0C9';
+  ctx.fillText(`${ciclo} · ${data}`, W/2, 252);
+
+  const startY = 320;
+  const footerY = H-70;
+  const marginX = 40;
+  const colGap = 24;
+
+  // adapt number of columns to the volume of data so nothing gets cramped or cut off
+  const itemCount = currentItems.length;
+  let numCols = 2;
+  if(itemCount > 50) numCols = 3;
+  if(itemCount > 90) numCols = 4;
+
+  const usableW = W - marginX*2;
+  const colWidth = (usableW - colGap*(numCols-1)) / numCols;
+  const colXs = Array.from({length:numCols}, (_,i)=> marginX + i*(colWidth+colGap));
+
+  ctx.strokeStyle='rgba(255,255,255,0.14)';
+  ctx.lineWidth = 2;
+  for(let i=1;i<numCols;i++){
+    const dx = colXs[i]-colGap/2;
+    ctx.beginPath(); ctx.moveTo(dx, startY-24); ctx.lineTo(dx, footerY-10); ctx.stroke();
+  }
+
+  const chunkSize = Math.ceil(itemCount/numCols) || 1;
+  const chunks = [];
+  for(let i=0;i<numCols;i++) chunks.push(currentItems.slice(i*chunkSize,(i+1)*chunkSize));
+  const maxRows = Math.max(...chunks.map(c=>c.length), 1);
+  const availableH = footerY - 40 - startY;
+  const rowH = Math.max(30, Math.min(60, availableH/maxRows));
+
+  let fontSize = rowH>=50 ? 24 : rowH>=40 ? 21 : rowH>=32 ? 18 : 15;
+  const innerWidth = colWidth - 26;
+  let idOffset, rotaOffset, estadoOffset;
+
+  function measureMaxWidth(texts, font){
+    ctx.font = font;
+    return texts.reduce((m,t)=>Math.max(m, ctx.measureText(String(t)).width), 0);
+  }
+
+  while(fontSize >= 12){
+    const idFont = `600 ${fontSize}px "Roboto Mono", monospace`;
+    const rotaFont = `500 ${fontSize-2}px Poppins, Arial, sans-serif`;
+    const statusFont = `700 ${fontSize-2}px Poppins, Arial, sans-serif`;
+    const maxIdW = measureMaxWidth(currentItems.map(i=>i.id), idFont);
+    const maxRotaW = measureMaxWidth(currentItems.map(i=>i.rota||'-'), rotaFont);
+    const maxStatusW = measureMaxWidth(currentItems.map(i=>causaLabelByKey[i.causaKey]||i.causaRaw||'-'), statusFont);
+
+    idOffset = 0;
+    rotaOffset = maxIdW + 20;
+    estadoOffset = rotaOffset + maxRotaW + 20;
+    const totalNeeded = estadoOffset + 18 + maxStatusW;
+
+    if(totalNeeded <= innerWidth || fontSize<=12) break;
+    fontSize -= 1;
+  }
+  const headerFontSize = fontSize + 1;
+
+  function drawColumn(items, x){
+    ctx.textAlign='left';
+    ctx.font=`700 ${headerFontSize}px Poppins, Arial, sans-serif`;
+    ctx.fillStyle='#FF9E5C';
+    ctx.fillText('ID', x+idOffset, startY);
+    ctx.fillText('ROTA', x+rotaOffset, startY);
+    ctx.fillText('STATUS', x+estadoOffset, startY);
+    ctx.strokeStyle='rgba(255,255,255,0.18)';
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x, startY+16); ctx.lineTo(x+colWidth-16, startY+16); ctx.stroke();
+
+    let y = startY + 16 + rowH*0.72;
+    items.forEach((it,i)=>{
+      if(i%2===0){
+        ctx.fillStyle='rgba(255,255,255,0.045)';
+        ctx.fillRect(x-8, y-rowH*0.66, colWidth-16, rowH*0.9);
+      }
+      const color = causaColor[it.causaKey] || '#3EC48A';
+      const label = causaLabelByKey[it.causaKey] || it.causaRaw || '-';
+
+      ctx.font=`600 ${fontSize}px "Roboto Mono", monospace`;
+      ctx.fillStyle='#FFFFFF';
+      ctx.fillText(it.id, x+idOffset, y);
+
+      ctx.font=`500 ${fontSize-2}px Poppins, Arial, sans-serif`;
+      ctx.fillStyle='#B9C7DE';
+      ctx.fillText(it.rota || '-', x+rotaOffset, y);
+
+      ctx.beginPath();
+      ctx.arc(x+estadoOffset+5, y-fontSize*0.32, 5, 0, Math.PI*2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.font=`700 ${fontSize-2}px Poppins, Arial, sans-serif`;
+      ctx.fillStyle = color;
+      ctx.fillText(label, x+estadoOffset+16, y);
+
+      y += rowH;
+    });
+  }
+
+  chunks.forEach((chunk,i)=> drawColumn(chunk, colXs[i]));
+
+  // Total de pacotes, abaixo da última coluna
+  const lastColX = colXs[colXs.length-1];
+  const listEndY = startY + 16 + rowH*0.72 + rowH*maxRows + 44;
+  const totalY = Math.min(listEndY, footerY-40);
+  const totalLabel = `Total de pacotes: ${currentTotal}`;
+  ctx.font='700 32px Poppins, Arial, sans-serif';
+  const totalLabelW = ctx.measureText(totalLabel).width;
+  ctx.textAlign='right';
+  ctx.fillStyle='#FFFFFF';
+  ctx.fillText(totalLabel, lastColX+colWidth-16, totalY);
+  ctx.fillStyle='#FF6A13';
+  ctx.fillRect(lastColX+colWidth-16-totalLabelW, totalY+14, totalLabelW, 3);
+
+  ctx.textAlign='center';
+  ctx.font='400 22px Poppins, Arial, sans-serif';
+  ctx.fillStyle='#5C6C86';
+  ctx.fillText('Kuehne+Nagel · Operação Meli', W/2, H-40);
+
+  document.getElementById('listBlock').classList.remove('hidden');
+}
+
+function buildCopyText(){
+  const ciclo = document.getElementById('cicloInput').value || 'SD';
+  const data = document.getElementById('dataInput').value || todayStr();
+  let txt = `*Pós Sorting – ${ciclo} · ${data}*\n\n`;
+  currentGroups.forEach(g=>{
+    const pct = currentTotal? (g.count/currentTotal*100).toFixed(1) : '0.0';
+    txt += `${g.icon} ${g.label}: ${g.count} (${pct}%)\n`;
+  });
+  txt += `\nTotal: ${currentTotal}\n\n*IDs e Rotas*\n`;
+  currentItems.forEach(it=>{
+    const g = currentGroups.find(gr=>gr.key===it.causaKey);
+    txt += `${it.id} | ${it.rota||'-'} | ${g?g.label:it.causaRaw}\n`;
+  });
+  return txt;
+}
+
+function downloadCanvas(canvasId, filename){
+  const canvas = document.getElementById(canvasId);
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function copyCanvasImage(canvasId, btnEl, fallbackName){
+  const canvas = document.getElementById(canvasId);
+  const originalText = btnEl.textContent;
+  canvas.toBlob(async (blob)=>{
+    if(!blob) return;
+    try{
+      if(!navigator.clipboard || !window.ClipboardItem){
+        throw new Error('Clipboard API indisponível');
+      }
+      await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      btnEl.textContent = 'Copiado! Cole no WhatsApp (Ctrl+V)';
+      setTimeout(()=>{ btnEl.textContent = originalText; }, 2500);
+    }catch(err){
+      downloadCanvas(canvasId, fallbackName);
+      btnEl.textContent = 'Não foi possível copiar — imagem baixada';
+      setTimeout(()=>{ btnEl.textContent = originalText; }, 3000);
+    }
+  }, 'image/png');
+}
+
+document.getElementById('processBtn').addEventListener('click', processData);
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  document.getElementById('dataArea').value='';
+  document.getElementById('resultsSection').classList.add('hidden');
+});
+document.getElementById('genSummaryImg').addEventListener('click', async ()=>{
+  await ensureFontsLoaded();
+  drawSummaryImage();
+});
+document.getElementById('genListImg').addEventListener('click', async ()=>{
+  await ensureFontsLoaded();
+  drawListImage();
+});
+document.getElementById('copySummaryBtn').addEventListener('click', (e)=>copyCanvasImage('summaryCanvas', e.target, 'resumo_faltantes_kn.png'));
+document.getElementById('copyListBtn').addEventListener('click', (e)=>copyCanvasImage('listCanvas', e.target, 'ids_rotas_kn.png'));
+document.getElementById('copyTextBtn').addEventListener('click', ()=>{
+  const area = document.getElementById('copyTextArea');
+  area.value = buildCopyText();
+  area.classList.remove('hidden');
+  area.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  if(navigator.clipboard){ navigator.clipboard.writeText(area.value).catch(()=>{}); }
+});
+
+// process sample data on load
+processData();
+</script>
+</body>
+</html>
